@@ -9,6 +9,7 @@ import {
   waitListWelcomeTemplate,
 } from "../templates/waitlist.template.js";
 import dotenv from "dotenv";
+import { sendWaitlistEmails } from "../services/email.service.js";
 
 // dotenv Configuration
 dotenv.config({
@@ -48,40 +49,14 @@ export const joinWaitlist = async (req, res) => {
       leadSource,
     });
 
-    // Send email
-    try {
-      await sendEmail({
-        fromMail: `AutoOperate Team <${process.env.SMPT_MAIL}>`,
-        toMail: entry.email,
-        subject: "Welcome to AutoOperate – You're on the Waitlist!",
-        html: waitListWelcomeTemplate(entry.fullName),
-        message: waitListWelcomeFallback(entry.fullName),
-      });
+    // Respond instantly
+    res.status(200).json({
+      success: true,
+      message: "You are on the waitlist!",
+    });
 
-      logger.info("Email to user sent successfully");
-
-      await sendEmail({
-        fromMail: `AutoOperate System <${process.env.SMPT_MAIL}>`,
-        toMail: process.env.ADMIN_EMAIL,
-        subject: "New Waitlist Registration – AutoOperate",
-        html: adminWaitlistNotifyTemplate(entry),
-        message: adminWaitlistNotifyFallback(entry),
-      });
-
-      logger.info("Email to admin sent successfully");
-
-      return res.status(200).json({
-        success: true,
-        message: `You are on the waitlist and will be notified via email when we launch.`,
-      });
-    } catch (error) {
-      logger.error(error);
-      return res.status(500).json({
-        success: false,
-        message: "Failed to send email",
-        error,
-      });
-    }
+    // Send async email in background
+    setImmediate(() => sendWaitlistEmails(entry));
   } catch (err) {
     logger.error("Waitlist Error:", err);
     return res.status(500).json({
