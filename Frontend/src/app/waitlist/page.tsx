@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -9,7 +9,49 @@ export default function WaitListPage() {
 }
 
 const WaitListCard = () => {
-  const [showPassword, setShowPassword] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [whatsapp, setWhatsApp] = useState("");
+  const [businessName, setBusinessName] = useState("");
+  const [leadSource, setLeadSource] = useState("");
+
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    setLoading(true);
+
+    const data = {
+      fullName,
+      email,
+      whatsapp,
+      businessName,
+      leadSource,
+    };
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/waitlist/join`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        }
+      );
+      const result = await response.json();
+      console.log(result);
+
+      if (result.success) {
+        setSuccess(true);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-white flex">
@@ -49,7 +91,7 @@ const WaitListCard = () => {
           </div>
 
           {/* WAITLIST FORM */}
-          <form className="space-y-5">
+          <form className="space-y-5" onSubmit={handleSubmit}>
             <div className="flex justify-between items-center gap-2">
               {/* Full Name */}
               <div>
@@ -61,6 +103,8 @@ const WaitListCard = () => {
                   required
                   className="w-full px-4 py-3.5 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-acc focus:border-transparent transition-all outline-none"
                   placeholder="John Doe"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
                 />
               </div>
 
@@ -74,6 +118,8 @@ const WaitListCard = () => {
                   required
                   className="w-full px-4 py-3.5 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-acc focus:border-transparent transition-all outline-none"
                   placeholder="name@company.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
             </div>
@@ -89,6 +135,8 @@ const WaitListCard = () => {
                   required
                   className="w-full px-4 py-3.5 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-acc focus:border-transparent transition-all outline-none"
                   placeholder="+91 98765 43210"
+                  value={whatsapp}
+                  onChange={(e) => setWhatsApp(e.target.value)}
                 />
               </div>
 
@@ -102,6 +150,8 @@ const WaitListCard = () => {
                   required
                   className="w-full px-4 py-3.5 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-acc focus:border-transparent transition-all outline-none"
                   placeholder="Your Company"
+                  value={businessName}
+                  onChange={(e) => setBusinessName(e.target.value)}
                 />
               </div>
             </div>
@@ -113,6 +163,8 @@ const WaitListCard = () => {
               </label>
               <select
                 className="cursor-pointer w-full px-4 py-3.5 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-acc focus:border-transparent transition-all outline-none"
+                value={leadSource}
+                onChange={(e) => setLeadSource(e.target.value)}
                 required
               >
                 <option value="">Select one</option>
@@ -124,11 +176,26 @@ const WaitListCard = () => {
             </div>
 
             {/* Submit */}
+
             <button
               type="submit"
-              className="w-full py-3.5 px-4 bg-acc text-white font-semibold rounded-xl hover:bg-acc/90 focus:outline-none focus:ring-2 focus:ring-acc focus:ring-offset-2 transition-all shadow-lg shadow-acc/30 cursor-pointer"
+              disabled={loading}
+              className={`w-full py-3.5 px-4 bg-acc text-white font-semibold rounded-xl
+    hover:bg-acc/90 focus:outline-none focus:ring-2 focus:ring-acc 
+    focus:ring-offset-2 transition-all shadow-lg shadow-acc/30 cursor-pointer
+    ${loading ? "opacity-70 cursor-not-allowed" : ""}
+  `}
             >
-              Join Waitlist
+              {loading ? (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="h-6 w-6 border-4 border-gray-300 border-t-transparent rounded-full animate-spin"></div>
+                  Joining Wait List...
+                </div>
+              ) : success ? (
+                "Welcome to AutoOperate !"
+              ) : (
+                "Join Waitlist"
+              )}
             </button>
           </form>
 
