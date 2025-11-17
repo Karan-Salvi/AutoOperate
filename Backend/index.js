@@ -10,9 +10,9 @@ dotenv.config({
 DB_connect();
 
 // Listening the port
-app.listen(process.env.PORT, () => {
-  console.log(`Server is Running on ${process.env.PORT}`);
-  console.log(`Frontend URI : ${process.env.FRONTEND_URI}`);
-});
+// app.listen(process.env.PORT, () => {
+//   console.log(`Server is Running on ${process.env.PORT}`);
+//   console.log(`Frontend URI : ${process.env.FRONTEND_URI}`);
+// });
 
 export default app;
